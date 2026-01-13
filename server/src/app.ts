@@ -1,0 +1,31 @@
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import authRoutes from "./routes/auth.route";
+import accountsRoutes from "./routes/accounts.route";
+import transactionRoute from "./routes/transaction.route";
+import exchangeRoute from "./routes/exchange.route";
+import loanRoute from "./routes/loan.route";
+dotenv.config();
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
+app.get("/", (req, res) => {
+  res.send("Hello, World!");
+});
+
+// routes
+app.use("/api/auth", authRoutes);
+app.use("/api/accounts", accountsRoutes);
+app.use("/api/transactions", transactionRoute);
+app.use("/api/exchange", exchangeRoute);
+app.use("/api/loans", loanRoute);
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap');
+@import "tailwindcss";
+@tailwind utilities;
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+*{
+  font-family: "Rethink Sans", sans-serif;
+}
+
+@layer base {
+  :root {
+    /* --- BACKGROUNDS (Clean Warm Surface) --- */
+    --background: oklch(0.985 0.002 247.82); /* Very faint warm white */
+    --foreground: oklch(0.141 0.005 285.823); /* Deep Slate Text */
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.141 0.005 285.823);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.141 0.005 285.823);
+
+    /* --- PRIMARY: TRUST TEAL (The Blue-ish hue) --- */
+    /* Used for Main Buttons, USD Wallet, Header */
+    --primary: oklch(0.47 0.11 184.75); /* #008080 Deep Teal */
+    --primary-foreground: oklch(0.985 0 0); /* White Text */
+
+    /* --- SECONDARY: BURNT ORANGE --- */
+    /* Used for "Exchange" buttons, SLSH Wallet, Highlights */
+    --secondary: oklch(0.65 0.20 35.24); /* #CC5500 Vivid Orange */
+    --secondary-foreground: oklch(0.985 0 0); /* White Text */
+
+    /* --- ACCENT: GOLD/AMBER --- */
+    --accent: oklch(0.85 0.16 85.00); /* Soft Gold for row hovers/light highlights */
+    --accent-foreground: oklch(0.141 0.005 285.823);
+
+    /* --- MUTED & BORDERS --- */
+    --muted: oklch(0.94 0.02 184.75); /* Very light teal-grey */
+    --muted-foreground: oklch(0.40 0.04 184.75); /* Muted teal text */
+
+    --destructive: oklch(0.63 0.22 25.41); /* Red */
+    --destructive-foreground: oklch(0.985 0 0);
+
+    --border: oklch(0.90 0.02 184.75); /* Light Teal border */
+    --input: oklch(0.90 0.02 184.75);
+    --ring: oklch(0.47 0.11 184.75); /* Teal Focus Ring */
+
+    --radius: 0.5rem;
+
+    /* --- CHARTS (Updated to match Brand) --- */
+    --chart-1: oklch(0.47 0.11 184.75); /* Teal (Primary) */
+    --chart-2: oklch(0.65 0.20 35.24);  /* Orange (Secondary) */
+    --chart-3: oklch(0.85 0.16 85.00);  /* Yellow */
+    --chart-4: oklch(0.63 0.22 25.41);  /* Red */
+    --chart-5: oklch(0.141 0.005 285.823); /* Slate */
+
+    /* --- SIDEBAR (Deep Teal Theme) --- */
+    --sidebar: oklch(0.98 0.01 185.00); /* Very light mint/teal tint */
+    --sidebar-foreground: oklch(0.141 0.005 285.823);
+    --sidebar-primary: oklch(0.47 0.11 184.75); /* Teal */
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.94 0.02 184.75);
+    --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
+    --sidebar-border: oklch(0.90 0.02 184.75);
+    --sidebar-ring: oklch(0.47 0.11 184.75);
+  }
+
+  .dark {
+    /* --- DARK BACKGROUNDS (Deep Ocean/Slate) --- */
+    --background: oklch(0.15 0.04 185.00); /* Dark Teal-Slate */
+    --foreground: oklch(0.985 0 0);
+
+    --card: oklch(0.20 0.04 185.00); /* Slightly lighter dark teal */
+    --card-foreground: oklch(0.985 0 0);
+
+    --popover: oklch(0.20 0.04 185.00);
+    --popover-foreground: oklch(0.985 0 0);
+
+    /* --- DARK MODE PRIMARY: Slightly Lighter Teal for visibility --- */
+    --primary: oklch(0.55 0.12 184.75); 
+    --primary-foreground: oklch(0.985 0 0);
+
+    /* --- DARK MODE SECONDARY: Orange --- */
+    --secondary: oklch(0.65 0.20 35.24);
+    --secondary-foreground: oklch(0.985 0 0);
+
+    /* --- DARK ACCENTS --- */
+    --accent: oklch(0.30 0.05 185.00);
+    --accent-foreground: oklch(0.985 0 0);
+
+    --muted: oklch(0.25 0.04 185.00);
+    --muted-foreground: oklch(0.70 0.05 185.00);
+
+    --destructive: oklch(0.63 0.22 25.41);
+    --destructive-foreground: oklch(0.985 0 0);
+
+    --border: oklch(0.30 0.05 185.00);
+    --input: oklch(0.30 0.05 185.00);
+    --ring: oklch(0.55 0.12 184.75);
+
+    /* --- DARK CHARTS --- */
+    --chart-1: oklch(0.55 0.12 184.75); /* Teal */
+    --chart-2: oklch(0.65 0.20 35.24);  /* Orange */
+    --chart-3: oklch(0.85 0.16 85.00);  /* Yellow */
+    --chart-4: oklch(0.63 0.22 25.41);  /* Red */
+    --chart-5: oklch(0.985 0 0);
+
+    /* --- DARK SIDEBAR --- */
+    --sidebar: oklch(0.18 0.04 185.00);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.55 0.12 184.75);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.30 0.05 185.00);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.30 0.05 185.00);
+    --sidebar-ring: oklch(0.55 0.12 184.75);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
