@@ -6,7 +6,7 @@ import LoanList from "../components/loans/LoanList";
 import LoanForm from "../components/loans/LoanForm";
 export default function LoansPage() {
   const [loans, setLoans] = useState([]);
-  const URL = "http://localhost:8000/api";
+  const URL = "https://cb-banking.onrender.com/api";
 
   useEffect(() => {
     const fetchLoans = async () => {

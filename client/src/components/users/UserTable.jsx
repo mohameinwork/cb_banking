@@ -5,7 +5,7 @@ import PageLoader from "../PageLoader";
 const UserTable = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const URL = "http://localhost:8000/api";
+  const URL = "https://cb-banking.onrender.com/api";
 
   useEffect(() => {
     const fetchUsers = async () => {

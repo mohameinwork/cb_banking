@@ -58,7 +58,7 @@ export default function ExchangePage() {
   const inputSymbol = direction === "USD_TO_SLSH" ? "$" : "Sh";
   const outputSymbol = direction === "USD_TO_SLSH" ? "SLSH" : "USD";
 
-  const URL = "http://localhost:8000/api";
+  const URL = "https://cb-banking.onrender.com/api";
   const handleSubmit = async () => {
     const amt = Number(amount || 0);
     const resAmt = Number(result || 0);

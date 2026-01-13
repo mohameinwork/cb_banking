@@ -7,7 +7,7 @@ import axios from "axios";
 export default function MyAccountsPage() {
   const [accounts, setAccounts] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const URL = "http://localhost:8000/api";
+  const URL = "https://cb-banking.onrender.com/api";
 
   useEffect(() => {
     const fetchAccounts = async () => {
