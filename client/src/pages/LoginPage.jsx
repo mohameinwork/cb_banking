@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
-const URL = "https://cb-banking.onrender.com/api";
+const URL = "http://localhost:8000/api";
 export default function LoginPage() {
   const { login, loading, setLoading } = useAuth();
   const navigate = useNavigate();

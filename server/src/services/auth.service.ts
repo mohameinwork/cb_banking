@@ -8,7 +8,7 @@ export async function registerUser(
   name: string,
   email: string,
   password: string,
-  role: "admin" | "staff" | "customer" = "customer"
+  role: "admin" | "staff" | "customer" = "customer",
 ) {
   const hashed = await bcrypt.hash(password, 10);
 
@@ -21,23 +21,52 @@ export async function registerUser(
 }
 
 export async function loginUser(email: string, password: string) {
+  // 1️⃣ Fetch user
   const [user] = await db.select().from(users).where(eq(users.email, email));
 
   if (!user) throw new Error("Invalid credentials");
 
+  // 2️⃣ Verify password
   const match = await bcrypt.compare(password, user.password);
   if (!match) throw new Error("Invalid credentials");
 
-  const secret: Secret = process.env.JWT_SECRET ?? "default_secret";
+  // 3️⃣ Fetch user accounts
+  const accountsTable = await db
+    .select({
+      id: accounts.id,
+      currency: accounts.currency,
+      balance: accounts.balance,
+      ledgerAccountId: accounts.ledgerAccountId,
+      status: accounts.status,
+    })
+    .from(accounts)
+    .where(eq(accounts.userId, user.id));
+
+  // 4️⃣ Generate JWT
+  const secret = process.env.JWT_SECRET!;
   const expiresIn = (process.env.JWT_EXPIRES_IN ??
     "1d") as SignOptions["expiresIn"];
-  const options: SignOptions = {
-    expiresIn,
+
+  const token = jwt.sign(
+    {
+      id: user.id,
+      role: user.role,
+    },
+    secret,
+    { expiresIn },
+  );
+
+  // 5️⃣ Return SAFE user object
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      accountsTable,
+    },
+    token,
   };
-
-  const token = jwt.sign({ id: user.id, role: user.role }, secret, options);
-
-  return { user, token };
 }
 
 export async function getUserById(id: string) {
@@ -68,7 +97,7 @@ export async function getUsersWithAccounts() {
 
 export async function updateUserRole(
   id: string,
-  role: "admin" | "staff" | "customer"
+  role: "admin" | "staff" | "customer",
 ) {
   const [user] = await db
     .update(users)
@@ -76,4 +105,14 @@ export async function updateUserRole(
     .where(eq(users.id, id))
     .returning();
   return user;
+}
+
+export async function getUserWithAccount(userId: string) {
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  if (!user) return null;
+  const userAccounts = await db
+    .select()
+    .from(accounts)
+    .where(eq(accounts.userId, userId));
+  return { ...user, accounts: userAccounts };
 }

@@ -7,7 +7,7 @@ import {
   ledgerAccounts,
   transactions,
 } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export async function setRate(base: string, quote: string, rate: number) {
   const [existing] = await db
@@ -16,8 +16,8 @@ export async function setRate(base: string, quote: string, rate: number) {
     .where(
       and(
         eq(exchangeRates.baseCurrency, base),
-        eq(exchangeRates.quoteCurrency, quote)
-      )
+        eq(exchangeRates.quoteCurrency, quote),
+      ),
     );
 
   if (existing) {
@@ -49,8 +49,8 @@ export async function getRate(base: string, quote: string) {
     .where(
       and(
         eq(exchangeRates.baseCurrency, base),
-        eq(exchangeRates.quoteCurrency, quote)
-      )
+        eq(exchangeRates.quoteCurrency, quote),
+      ),
     );
 
   if (!rate) throw new Error("Exchange rate not set");
@@ -67,53 +67,74 @@ export async function exchange({
   sourceAccountId,
   targetAccountId,
   sourceAmount,
-  targetAmount,
-  sourceCurrency,
-  targetCurrency,
   rate,
 }: {
   userId: string;
   sourceAccountId: string;
   targetAccountId: string;
   sourceAmount: number;
-  targetAmount: number;
-  sourceCurrency: "USD" | "SLSH";
-  targetCurrency: "USD" | "SLSH";
   rate: number;
 }) {
-  if (sourceCurrency === targetCurrency)
-    throw new Error("Currencies must be different");
+  if (sourceAccountId === targetAccountId) {
+    throw new Error("Source and target accounts must be different");
+  }
+
+  if (!sourceAmount || sourceAmount <= 0) {
+    throw new Error("Source amount must be positive");
+  }
+
+  if (!rate || rate <= 0) {
+    throw new Error("Invalid exchange rate");
+  }
 
   return await db.transaction(async (tx) => {
     //
-    // 1️⃣ LOCK ACCOUNTS
+    // 1️⃣ FETCH + LOCK ACCOUNTS
     //
-    const [sourceAcc] = await tx
-      .select()
-      .from(accounts)
-      .where(eq(accounts.id, sourceAccountId));
+    const sourceRes = await tx.execute(sql`
+      SELECT * FROM accounts
+      WHERE id = ${sourceAccountId}
+      FOR UPDATE
+    `);
+    const sourceAcc = sourceRes.rows[0] as any;
 
-    const [targetAcc] = await tx
-      .select()
-      .from(accounts)
-      .where(eq(accounts.id, targetAccountId));
+    const targetRes = await tx.execute(sql`
+      SELECT * FROM accounts
+      WHERE id = ${targetAccountId}
+      FOR UPDATE
+    `);
+    const targetAcc = targetRes.rows[0] as any;
 
-    if (!sourceAcc || !targetAcc) throw new Error("Account not found");
+    if (!sourceAcc || !targetAcc) {
+      throw new Error("Account not found");
+    }
 
-    if (sourceAcc.userId !== userId || targetAcc.userId !== userId)
+    if (sourceAcc.user_id !== userId || targetAcc.user_id !== userId) {
       throw new Error("Account ownership mismatch");
-
-    if (sourceAcc.currency !== sourceCurrency)
-      throw new Error("Source currency mismatch");
-
-    if (targetAcc.currency !== targetCurrency)
-      throw new Error("Target currency mismatch");
-
-    if (Number(sourceAcc.balance) < sourceAmount)
-      throw new Error("Insufficient balance");
+    }
 
     //
-    // 2️⃣ UPDATE BALANCES
+    // 2️⃣ DERIVE CURRENCIES FROM ACCOUNTS (NOT INPUT)
+    //
+    const sourceCurrency = sourceAcc.currency;
+    const targetCurrency = targetAcc.currency;
+
+    if (sourceCurrency === targetCurrency) {
+      throw new Error("Exchange requires different currencies");
+    }
+
+    //
+    // 3️⃣ CALCULATE TARGET AMOUNT
+    //
+    const targetAmount =
+      sourceCurrency === "USD" ? sourceAmount * rate : sourceAmount / rate;
+
+    if (Number(sourceAcc.balance) < sourceAmount) {
+      throw new Error("Insufficient balance");
+    }
+
+    //
+    // 4️⃣ UPDATE BALANCES
     //
     const newSourceBalance = Number(sourceAcc.balance) - sourceAmount;
     const newTargetBalance = Number(targetAcc.balance) + targetAmount;
@@ -129,7 +150,7 @@ export async function exchange({
       .where(eq(accounts.id, targetAccountId));
 
     //
-    // 3️⃣ TRANSACTION RECORD
+    // 5️⃣ CREATE TRANSACTION RECORD
     //
     const [txn] = await tx
       .insert(transactions)
@@ -142,17 +163,17 @@ export async function exchange({
           userId,
           sourceAccountId,
           targetAccountId,
-          sourceAmount,
-          targetAmount,
           sourceCurrency,
           targetCurrency,
+          sourceAmount,
+          targetAmount,
           rate,
         },
       } as any)
       .returning();
 
     //
-    // 4️⃣ JOURNAL ENTRY
+    // 6️⃣ JOURNAL ENTRY
     //
     const [journal] = await tx
       .insert(journalEntries)
@@ -163,20 +184,18 @@ export async function exchange({
       .returning();
 
     //
-    // 5️⃣ JOURNAL LINES (DOUBLE ENTRY)
+    // 7️⃣ DOUBLE-ENTRY JOURNAL LINES
     //
     await tx.insert(journalLines).values([
       {
         journalId: journal.id,
-        ledgerAccountId:
-          targetCurrency === "USD" ? USD_CASH_ACCOUNT_ID : SLSH_CASH_ACCOUNT_ID,
+        ledgerAccountId: targetAcc.ledger_account_id,
         side: "DEBIT",
         amount: targetAmount.toFixed(2),
       },
       {
         journalId: journal.id,
-        ledgerAccountId:
-          sourceCurrency === "USD" ? USD_CASH_ACCOUNT_ID : SLSH_CASH_ACCOUNT_ID,
+        ledgerAccountId: sourceAcc.ledger_account_id,
         side: "CREDIT",
         amount: sourceAmount.toFixed(2),
       },
@@ -184,8 +203,14 @@ export async function exchange({
 
     return {
       transactionId: txn.id,
-      sourceBalance: newSourceBalance,
-      targetBalance: newTargetBalance,
+      sourceCurrency,
+      targetCurrency,
+      sourceAmount,
+      targetAmount,
+      balances: {
+        source: newSourceBalance,
+        target: newTargetBalance,
+      },
     };
   });
 }

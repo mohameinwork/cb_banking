@@ -27,7 +27,8 @@ export async function depositFn(req: Request, res: Response) {
     const { id } = req.params;
     const { amount, currency } = req.body;
 
-    const txn = await deposit(id, amount, currency);
+    const accountId = Array.isArray(id) ? id[0] : id;
+    const txn = await deposit(accountId, Number(amount), String(currency));
     res.json({ message: "Deposit successful", transaction: txn });
   } catch (error) {
     console.error("Error processing deposit:", error);
@@ -41,7 +42,8 @@ export async function withdrawFn(req: Request, res: Response) {
     const { id } = req.params;
     const { amount, currency } = req.body;
 
-    const txn = await withdraw(id, Number(amount), currency);
+    const accountId = Array.isArray(id) ? id[0] : id;
+    const txn = await withdraw(accountId, Number(amount), String(currency));
     res.json({ message: "Withdrawal successful", transaction: txn });
   } catch (error) {
     console.error("Error processing withdrawal:", error);
@@ -55,7 +57,14 @@ export async function transferFn(req: Request, res: Response) {
     const { id } = req.params;
     const { toAccountId, amount, currency } = req.body;
 
-    const txn = await transfer(id, toAccountId, amount, currency);
+    const fromAccountId = Array.isArray(id) ? id[0] : id;
+    const toId = Array.isArray(toAccountId) ? toAccountId[0] : toAccountId;
+    const txn = await transfer(
+      fromAccountId,
+      toId,
+      Number(amount),
+      String(currency)
+    );
     res.json({ message: "Transfer successful", transaction: txn });
   } catch (error) {
     console.error("Error processing transfer:", error);

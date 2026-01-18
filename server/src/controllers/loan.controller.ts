@@ -12,13 +12,17 @@ export async function createLoan(req: Request, res: Response) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    const months = Number(termMonths);
+    if (isNaN(months) || months <= 0) {
+      return res.status(400).json({ message: "Invalid term months" });
+    }
     const [loan] = await db
       .insert(loans)
       .values({
         accountId,
         principal,
         interestRate,
-        termMonths,
+        termMonths: months,
         status: "ACTIVE",
       })
       .returning();
@@ -36,7 +40,10 @@ export async function createLoan(req: Request, res: Response) {
 // Get All Loans
 export async function getLoans(req: Request, res: Response) {
   try {
-    const data = await db.select().from(loans);
+    const data = await db
+      .select()
+      .from(loans)
+      .leftJoin(loanPayments, eq(loans.id, loanPayments.loanId));
 
     return res.json({
       message: "Loans fetched successfully",
@@ -51,7 +58,9 @@ export async function getLoans(req: Request, res: Response) {
 // Get loan by Id
 export async function getLoanById(req: Request, res: Response) {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    if (!id) return res.status(400).json({ message: "Missing loan id" });
 
     const [loan] = await db.select().from(loans).where(eq(loans.id, id));
 
@@ -75,7 +84,9 @@ export async function getLoanById(req: Request, res: Response) {
 // Update Loans
 export async function updateLoan(req: Request, res: Response) {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    if (!id) return res.status(400).json({ message: "Missing loan id" });
     const { interestRate, termMonths, status } = req.body;
 
     const [loan] = await db
@@ -103,7 +114,9 @@ export async function updateLoan(req: Request, res: Response) {
 // Delete a loan
 export async function deleteLoan(req: Request, res: Response) {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    if (!id) return res.status(400).json({ message: "Missing loan id" });
 
     await db.delete(loanPayments).where(eq(loanPayments.loanId, id));
     const result = await db.delete(loans).where(eq(loans.id, id));

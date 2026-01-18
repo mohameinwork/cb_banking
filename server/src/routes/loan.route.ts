@@ -27,6 +27,6 @@ router.delete("/:id", deleteLoan);
 
 // Make a payment
 // Private Route
-router.post("/payment", makeLoanPayment);
+router.post("/make-payment", makeLoanPayment);
 
 export default router;

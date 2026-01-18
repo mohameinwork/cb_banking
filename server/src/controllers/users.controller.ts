@@ -26,15 +26,20 @@ export async function register(req: Request, res: Response) {
 }
 
 export async function login(req: Request, res: Response) {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const { user, token } = await loginUser(email, password);
+    const { user, token } = await loginUser(email, password);
 
-  res.json({
-    message: "Login successful",
-    token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
-  });
+    res.json({
+      message: "Login successful",
+      token,
+      user,
+    });
+  } catch (error) {
+    console.log("Error logging in user:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 export async function getProfile(req: Request, res: Response) {

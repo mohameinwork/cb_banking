@@ -5,7 +5,7 @@ export async function createAccount(
   userId: string,
   currency: string,
   account_number?: string,
-  balance?: number
+  balance?: number,
 ) {
   // Creating a ledger account for the new account can be added here
   const [ledgerAccount] = await db
@@ -51,7 +51,7 @@ export async function getAccountsByUserId(userId: string) {
 
 export async function updateAccountStatus(
   accountId: string,
-  status: "ACTIVE" | "SUSPENDED" | "CLOSED"
+  status: "ACTIVE" | "SUSPENDED" | "CLOSED",
 ) {
   await db.update(accounts).set({ status }).where(eq(accounts.id, accountId));
 }

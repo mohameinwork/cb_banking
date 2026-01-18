@@ -18,8 +18,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData);
+    const authData = {
+      token: userData.token,
+      user: userData.user,
+      accounts: userData.accountsTable, // 👈 rename for sanity
+    };
     if (typeof window !== "undefined") {
-      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("user", JSON.stringify(authData));
     }
   };
 

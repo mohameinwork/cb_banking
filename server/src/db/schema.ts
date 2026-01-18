@@ -19,7 +19,9 @@ export const users = pgTable("users", {
 
 export const accounts = pgTable("accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id").notNull(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   accountNumber: text("account_number").notNull().unique(),
   currency: text("currency").notNull(), // USD|SLSH
   balance: numeric("balance", { precision: 18, scale: 2 }).default("0.00"),
@@ -112,5 +114,14 @@ export const journalLines = pgTable("journal_lines", {
 
   side: text("side").$type<"DEBIT" | "CREDIT">().notNull(),
 
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const quotation = pgTable("quotation", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  description: text("description").notNull(),
+  amount: numeric("amount", { precision: 18, scale: 2 }).notNull(),
+  company_name: text("company_name").notNull(),
+  container_no: text("container_no").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

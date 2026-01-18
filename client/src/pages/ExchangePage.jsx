@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { ArrowRightLeft, RefreshCcw, CheckCircle } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import ExchangeForm from "../components/exchanges/ExchangeForm";
 import ExchangeSwitch from "../components/exchanges/ExchangeSwitch";
 import ResultExchange from "../components/exchanges/ResultExchange";
 import { useAuth } from "../context/useAuth";
 import axios from "axios";
+import PageLoader from "../components/PageLoader";
 
 export default function ExchangePage() {
   const { user } = useAuth();
@@ -17,6 +18,15 @@ export default function ExchangePage() {
     if (user?.user?.name) setSenderName(user.user.name);
   }, [user]);
 
+  const accounts = user?.user.accountsTable ?? [];
+
+  const usdAccount = accounts.find((acc) => acc.currency === "USD");
+  const slshAccount = accounts.find((acc) => acc.currency === "SLSH");
+
+  if (!usdAccount || !slshAccount) {
+    throw new Error("Required account missing");
+  }
+
   // Input values
   const [amount, setAmount] = useState("");
   const [rate, setRate] = useState(10800);
@@ -28,7 +38,7 @@ export default function ExchangePage() {
   // 1. Switch Handler
   const toggleDirection = () => {
     setDirection((prev) =>
-      prev === "USD_TO_SLSH" ? "SLSH_TO_USD" : "USD_TO_SLSH"
+      prev === "USD_TO_SLSH" ? "SLSH_TO_USD" : "USD_TO_SLSH",
     );
     setAmount(""); // Clear input to avoid confusion
     setResult("0");
@@ -50,6 +60,7 @@ export default function ExchangePage() {
     }
   }, [amount, rate, direction]);
 
+  const URL = "http://localhost:8000/api";
   // Labels based on direction
   const inputLabel =
     direction === "USD_TO_SLSH" ? "Dollar ($)" : "Shilling (Sh)";
@@ -58,7 +69,6 @@ export default function ExchangePage() {
   const inputSymbol = direction === "USD_TO_SLSH" ? "$" : "Sh";
   const outputSymbol = direction === "USD_TO_SLSH" ? "SLSH" : "USD";
 
-  const URL = "https://cb-banking.onrender.com/api";
   const handleSubmit = async () => {
     const amt = Number(amount || 0);
     const resAmt = Number(result || 0);
@@ -74,17 +84,28 @@ export default function ExchangePage() {
     if (!rt || rt <= 0) return alert("Invalid rate");
 
     const payload = {
-      sender: user?.user?.id,
-      receiver: receiverName,
-      sourceAmount: amt,
-      sourceCurrency: inputLabel,
-      targetAmount: resAmt,
-      targetCurrency: inputLabel === "Shilling (Sh)" ? "SLSH" : "USD",
-      rate: rt,
+      userId: user.user.id,
+
+      sourceAccountId:
+        direction === "USD_TO_SLSH" ? usdAccount.id : slshAccount.id,
+
+      targetAccountId:
+        direction === "USD_TO_SLSH" ? slshAccount.id : usdAccount.id,
+
+      sourceAmount: Number(amount),
+      targetAmount: Number(result),
+
+      sourceCurrency: direction === "USD_TO_SLSH" ? "USD" : "SLSH",
+      targetCurrency: direction === "USD_TO_SLSH" ? "SLSH" : "USD",
+
+      rate: Number(rate),
     };
 
+    setLoading(true); // optional loading state
+
+    console.log("Submitting exchange with payload:", payload);
+
     try {
-      setLoading(true); // optional loading state
       const response = await axios.post(`${URL}/exchange/convert`, payload);
       console.log("Exchange success:", response.data);
       alert("Conversion successful!");
@@ -95,6 +116,7 @@ export default function ExchangePage() {
       setRate("");
       setReceiverName("");
       setSenderName("");
+      setLoading(false);
     } catch (error) {
       console.error("Exchange failed:", error);
       alert(error?.response?.data?.message || "Something went wrong!");
@@ -103,6 +125,7 @@ export default function ExchangePage() {
     }
   };
 
+  if (loading) return <PageLoader />;
   return (
     <div className="max-w-6xl mx-auto pt-6 pb-12">
       {/* 1. TITLE (Kept at top) */}

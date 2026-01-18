@@ -18,33 +18,69 @@ import {
 import CashFlowChart from "@/components/CashFlowChart";
 import PortfolioChart from "@/components/PortfolioChart";
 import ExchangeTrendChart from "@/components/ExchangeTrendChart";
+import BalanceCards from "../components/BalanceCards";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import PageLoader from "../components/PageLoader";
 const Dashboard = () => {
-  const recentTransactions = [
-    {
-      id: 1,
-      name: "Ahmed Yasin",
-      type: "Sent",
-      amount: "-$120.00",
-      date: "Today, 10:23 AM",
-      avatar: "AY",
-    },
-    {
-      id: 2,
-      name: "Dahabshiil Remittance",
-      type: "Received",
-      amount: "+$4,500.00",
-      date: "Yesterday, 4:00 PM",
-      avatar: "DR",
-    },
-    {
-      id: 3,
-      name: "Sarif Exchange",
-      type: "Exchange",
-      amount: "~ 2.5M SLSH",
-      date: "Nov 24, 2025",
-      avatar: "EX",
-    },
-  ];
+  const [accounts, setAccounts] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [loans, setLoans] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const URL = "http://localhost:8000/api";
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const resp = await axios.get(`${URL}/accounts/all`);
+        setAccounts(resp.data.accounts);
+      } catch (error) {
+        console.log("Failed to load accounts", error);
+      }
+    };
+
+    const fetchTransactions = async () => {
+      try {
+        const resp = await axios.get(`${URL}/transactions/all`);
+        setTransactions(resp?.data.data);
+      } catch (error) {
+        console.log("Failed to load transactions", error);
+      }
+    };
+
+    const fetchLoans = async () => {
+      setLoading(true);
+      try {
+        const resp = await axios.get(`${URL}/loans/all`);
+        setLoans(resp.data.data);
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
+      }
+    };
+
+    fetchAccounts();
+    fetchTransactions();
+    fetchLoans();
+  }, []);
+
+  const usdType = accounts.find((acc) => acc.currency === "USD");
+  const slshType = accounts.find((acc) => acc.currency === "SLSH");
+  const amount = usdType ? usdType.balance : "0.00";
+  const slshAmount = slshType ? slshType.balance : "0";
+  const usdAmount = `$${parseFloat(amount).toFixed(2)}`;
+
+  const activeLoans = loans.filter((loan) => loan.status === "ACTIVE");
+  const totalLoanAmount = activeLoans.reduce(
+    (total, loan) => total + parseFloat(loan.amount),
+    0
+  );
+  const formattedLoanAmount = `$${totalLoanAmount.toFixed(2)}`;
+
+  const dueDate = activeLoans.length > 0 ? activeLoans[0].dueDate : "N/A";
+
+  if (loading) return <PageLoader />;
   return (
     <>
       {/* 1. Page Header */}
@@ -73,70 +109,32 @@ const Dashboard = () => {
       {/* 2. Metrics Row */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Metric 1: USD Balance */}
-        <Card className="border-t-4 border-t-secondary shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              USD Balance
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-secondary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">$1,234.56</div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center">
-              <TrendingUp className="h-3 w-3 text-emerald-500 mr-1" />
-              <span className="text-emerald-500 font-medium">+2.5%</span> from
-              last month
-            </p>
-          </CardContent>
-        </Card>
+        <BalanceCards
+          title="USD Balance"
+          type="USD"
+          amount={usdAmount}
+          icon={DollarSign}
+        />
 
         {/* Metric 2: SLSH Balance */}
-        <Card className="border-t-4 border-t-primary shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              SLSH Balance
-            </CardTitle>
-            <span className="text-sm font-bold text-primary">Sh</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">3,500,000</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Available to Exchange
-            </p>
-          </CardContent>
-        </Card>
+        <BalanceCards title="SLSH Balance" type="SLSH" amount={slshAmount} />
 
         {/* Metric 3: Active Loans */}
-        <Card className="border-t-4 border-t-destructive shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Loan
-            </CardTitle>
-            <CreditCard className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">$500.00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Due: Dec 01, 2025
-            </p>
-          </CardContent>
-        </Card>
+        <BalanceCards
+          title="Active Loans"
+          type="Loan"
+          amount={formattedLoanAmount}
+          dueDate={dueDate}
+          icon={CreditCard}
+        />
 
         {/* Metric 4: Total Profit (Admin/Personal View) */}
-        <Card className="border-t-4 border-t-accent shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Income
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-accent-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">$450.00</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              From Sarif & Transfers
-            </p>
-          </CardContent>
-        </Card>
+        <BalanceCards
+          title="Total Income"
+          type="income"
+          amount="$8,750.00"
+          icon={TrendingUp}
+        />
       </div>
 
       {/* 3. Main Chart Section */}
@@ -167,7 +165,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentTransactions.map((tx) => (
+              {transactions.map((tx) => (
                 <div
                   key={tx.id}
                   className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-lg transition-colors"
@@ -175,14 +173,18 @@ const Dashboard = () => {
                   <div className="flex items-center gap-4">
                     <Avatar className="h-9 w-9 bg-secondary/10">
                       <AvatarFallback className="text-secondary font-bold text-xs">
-                        {tx.avatar}
+                        {tx.type.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium leading-none">
-                        {tx.name}
+                        {tx.type}
                       </p>
-                      <p className="text-xs text-muted-foreground">{tx.date}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {tx.createdAt
+                          ? new Date(tx.createdAt).toLocaleString()
+                          : "--"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

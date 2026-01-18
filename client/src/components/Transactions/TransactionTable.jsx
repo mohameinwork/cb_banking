@@ -5,7 +5,7 @@ import PageLoader from "../PageLoader";
 const TransactionTable = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const URL = "https://cb-banking.onrender.com/api";
+  const URL = "http://localhost:8000/api";
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true);
@@ -42,7 +42,9 @@ const TransactionTable = () => {
                 key={tx.id}
                 className="hover:bg-blue-50 transition-colors cursor-pointer"
               >
-                <td className="p-5 font-bold text-trust-light">{tx.id}</td>
+                <td className="p-5 font-bold text-trust-light">
+                  #{tx.id.slice(0, 8)}
+                </td>
                 <td className="p-5">
                   <div className="flex items-center gap-3">
                     {/* Icon Logic */}

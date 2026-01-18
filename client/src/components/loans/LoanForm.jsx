@@ -1,8 +1,33 @@
+import axios from "axios";
 import { AlertCircle } from "lucide-react";
 import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const LoanForm = () => {
   const [loanAmount, setLoanAmount] = useState(500);
+  const [termMonth, setTermMonth] = useState("");
+  const URL = "http://localhost:8000/api";
+  const handleSubmit = async () => {
+    // Submit loan request logic here
+    try {
+      const resp = await axios.post(`${URL}/loans/`, {
+        accountId: "a5ae7693-1768-4bd3-8637-b2ea3e720f5b",
+        principal: loanAmount,
+        termMonths: Number(termMonth),
+        interestRate: 0.05,
+      });
+
+      console.log(resp.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-trust-DEFAULT">
@@ -48,16 +73,21 @@ const LoanForm = () => {
           <label className="block text-primary font-bold text-lg mb-4">
             Repayment Duration
           </label>
-          <div className="grid grid-cols-3 gap-4">
-            {["1 Month", "3 Months", "6 Months"].map((dur) => (
-              <button
-                key={dur}
-                className="border-2 border-gray-200 text-gray-500 font-bold py-3 rounded-lg hover:border-primary hover:text-primary focus:border-primary focus:text-primary transition-all"
-              >
-                {dur}
-              </button>
-            ))}
-          </div>
+
+          <Select onValueChange={setTermMonth} value={termMonth}>
+            <SelectTrigger className="w-full h-12 text-lg font-bold text-gray-600 border-2 border-gray-200 focus:border-primary focus:ring-primary/20 transition-all">
+              <SelectValue placeholder="Select Duration" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 Month</SelectItem>
+              <SelectItem value="3" className="font-medium cursor-pointer">
+                3 Months
+              </SelectItem>
+              <SelectItem value="6" className="font-medium cursor-pointer">
+                6 Months
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Summary */}
@@ -76,7 +106,10 @@ const LoanForm = () => {
           </div>
         </div>
 
-        <button className="w-full bg-primary text-white font-extrabold text-xl py-4 rounded shadow-lg hover:bg-trust-light transition-colors uppercase">
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-primary text-white font-extrabold text-xl py-4 rounded shadow-lg hover:bg-trust-light transition-colors uppercase"
+        >
           Submit Request
         </button>
       </div>

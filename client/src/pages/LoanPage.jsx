@@ -1,26 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { CreditCard, Calendar, CheckCircle, AlertCircle } from "lucide-react";
 import axios from "axios";
 import LoanCard from "../components/loans/LoanCard";
 import LoanList from "../components/loans/LoanList";
 import LoanForm from "../components/loans/LoanForm";
+import PageLoader from "../components/PageLoader";
 export default function LoansPage() {
   const [loans, setLoans] = useState([]);
-  const URL = "https://cb-banking.onrender.com/api";
+  const [loading, setLoading] = useState(false);
+  const URL = "http://localhost:8000/api";
 
   useEffect(() => {
     const fetchLoans = async () => {
+      setLoading(true);
       try {
         const resp = await axios.get(`${URL}/loans/all`);
         setLoans(resp.data.data);
+        setLoading(false);
       } catch (error) {
         console.log(error);
+        setLoading(false);
       }
     };
     fetchLoans();
   }, []);
 
-  console.log(loans);
+  const handleMakePayment = async (loanId, amount) => {
+    setLoading(true);
+    try {
+      await axios.post(`${URL}/loans/make-payment`, {
+        loanId,
+        amount,
+      });
+      setLoading(false);
+      // Refresh loans data after payment
+      const updatedLoans = await axios.get(`${URL}/loans/all`);
+      setLoans(updatedLoans.data.data);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <PageLoader />;
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -33,7 +54,7 @@ export default function LoansPage() {
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-primary">Active Loan</h2>
 
-          <LoanCard />
+          <LoanCard handleMakePayment={handleMakePayment} loans={loans} />
 
           {/* Past Payments List */}
           <LoanList loans={loans} />
