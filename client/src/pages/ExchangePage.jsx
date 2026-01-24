@@ -5,7 +5,7 @@ import ExchangeSwitch from "../components/exchanges/ExchangeSwitch";
 import ResultExchange from "../components/exchanges/ResultExchange";
 import { useAuth } from "../context/useAuth";
 import axios from "axios";
-import PageLoader from "../components/PageLoader";
+import SuccessModal from "../components/SuccessModal";
 
 export default function ExchangePage() {
   const { user } = useAuth();
@@ -13,9 +13,9 @@ export default function ExchangePage() {
   const [direction, setDirection] = useState("USD_TO_SLSH"); // "USD_TO_SLSH" or "SLSH_TO_USD"
   const [senderName, setSenderName] = useState("");
   const [receiverName, setReceiverName] = useState("");
-
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   useEffect(() => {
-    if (user?.user?.name) setSenderName(user.user.name);
+    if (user?.user?.name) setSenderName(user.user.name.toUpperCase());
   }, [user]);
 
   const accounts = user?.user.accountsTable ?? [];
@@ -31,7 +31,6 @@ export default function ExchangePage() {
   const [amount, setAmount] = useState("");
   const [rate, setRate] = useState(10800);
   const [result, setResult] = useState("0");
-  const [loading, setLoading] = useState(false);
 
   // --- LOGIC ---
 
@@ -70,9 +69,9 @@ export default function ExchangePage() {
   const outputSymbol = direction === "USD_TO_SLSH" ? "SLSH" : "USD";
 
   const handleSubmit = async () => {
-    const amt = Number(amount || 0);
-    const resAmt = Number(result || 0);
-    const rt = Number(rate || 0);
+    const amt = Number(amount);
+    const resAmt = Number(result);
+    const rt = Number(rate);
 
     // Validation
     if (!senderName) return alert("Sender is required");
@@ -82,7 +81,6 @@ export default function ExchangePage() {
     if (!resAmt || resAmt <= 0)
       return alert("Target amount must be greater than zero");
     if (!rt || rt <= 0) return alert("Invalid rate");
-
     const payload = {
       userId: user.user.id,
 
@@ -101,31 +99,26 @@ export default function ExchangePage() {
       rate: Number(rate),
     };
 
-    setLoading(true); // optional loading state
-
+    setIsSuccessOpen(false);
     console.log("Submitting exchange with payload:", payload);
 
     try {
-      const response = await axios.post(`${URL}/exchange/convert`, payload);
-      console.log("Exchange success:", response.data);
-      alert("Conversion successful!");
-
+      await axios.post(`${URL}/exchange/convert`, payload);
       // Reset form
       setAmount("");
       setResult("");
       setRate("");
       setReceiverName("");
       setSenderName("");
-      setLoading(false);
+      setIsSuccessOpen(true);
     } catch (error) {
       console.error("Exchange failed:", error);
       alert(error?.response?.data?.message || "Something went wrong!");
     } finally {
-      setLoading(false);
+      setIsSuccessOpen(false);
     }
   };
 
-  if (loading) return <PageLoader />;
   return (
     <div className="max-w-6xl mx-auto pt-6 pb-12">
       {/* 1. TITLE (Kept at top) */}
@@ -168,6 +161,21 @@ export default function ExchangePage() {
         outputSymbol={outputSymbol}
         result={result}
         rate={rate}
+      />
+
+      {/* 3. Render the Success Modal at the bottom of the component */}
+      <SuccessModal
+        isOpen={isSuccessOpen}
+        onClose={() => setIsSuccessOpen(false)}
+        title="Exchange Successful!"
+        message="The currency exchange has been recorded in the ledger."
+        details={{
+          "Transaction ID": "TXN-882910-XG",
+          Sender: senderName || "Self",
+          Receiver: receiverName || "Self",
+          "Exchange Rate": `1 USD = ${rate} SLSH`,
+          "Total Amount": `${result} ${direction === "USD_TO_SLSH" ? "SLSH" : "USD"}`,
+        }}
       />
     </div>
   );

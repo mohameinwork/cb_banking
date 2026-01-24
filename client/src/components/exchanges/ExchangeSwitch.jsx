@@ -28,7 +28,7 @@ const ExchangeSwitch = ({
             <input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value || "0")}
+              onChange={(e) => setAmount(Number(e.target.value))}
               placeholder="0.00"
               className="w-full text-center font-bold text-xl outline-none text-gray-800 placeholder-gray-300"
             />
