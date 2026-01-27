@@ -7,7 +7,7 @@ import PageLoader from "../components/PageLoader";
 export default function LoansPage() {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const URL = "http://localhost:8000/api";
+  const URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchLoans = async () => {

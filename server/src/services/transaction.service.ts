@@ -3,75 +3,74 @@ import { accounts, transactions } from "../db/schema";
 import { ledgerAccounts, journalEntries, journalLines } from "../db/schema";
 import { eq } from "drizzle-orm";
 
-export async function deposit(
-  accountId: string,
-  amount: number,
-  currency: string
-) {
-  return await db.transaction(async (tx) => {
-    // 1️⃣ Fetch account
-    const [acc] = await tx
-      .select()
-      .from(accounts)
-      .where(eq(accounts.id, accountId));
+export async function deposit(id: string, amount: number, currency: string) {
+  try {
+    return await db.transaction(async (tx) => {
+      // 1️⃣ Fetch account
+      const [acc] = await tx.select().from(accounts).where(eq(accounts.id, id));
 
-    if (!acc) throw new Error("Account not found");
-    if (acc.currency !== currency) throw new Error("Currency mismatch");
+      if (!acc) throw new Error("Account not found");
+      if (acc.currency !== currency) throw new Error("Currency mismatch");
 
-    if (!acc.ledgerAccountId) throw new Error("Account ledger not configured");
+      if (!acc.ledgerAccountId)
+        throw new Error("Account ledger not configured");
 
-    // update balance
-    const newBalance = Number(acc.balance) + amount;
-    await tx
-      .update(accounts)
-      .set({ balance: `${newBalance}` })
-      .where(eq(accounts.id, accountId))
-      .returning();
+      // update balance
+      const newBalance = Number(acc.balance) + amount;
+      await tx
+        .update(accounts)
+        .set({ balance: `${newBalance}` })
+        .where(eq(accounts.id, id))
+        .returning();
 
-    // 2️⃣ Record business transaction
-    const [txn] = await tx
-      .insert(transactions)
-      .values({
-        type: "DEPOSIT",
-        amount,
-        currency,
-        toAccountId: accountId,
-      } as any)
-      .returning();
+      // 2️⃣ Record business transaction
+      const [txn] = await tx
+        .insert(transactions)
+        .values({
+          type: "DEPOSIT",
+          amount,
+          currency,
+          toAccountId: id,
+        } as any)
+        .returning();
 
-    // 3️⃣ Journal Entry
-    const [journal] = await tx
-      .insert(journalEntries)
-      .values({
-        description: `Deposit to account ${accountId}`,
-        transactionId: txn.id,
-      } as any)
-      .returning();
+      // 3️⃣ Journal Entry
+      const [journal] = await tx
+        .insert(journalEntries)
+        .values({
+          description: `Deposit to account ${id}`,
+          transactionId: txn.id,
+        } as any)
+        .returning();
 
-    // 4️⃣ Double Entry
-    await tx.insert(journalLines).values([
-      {
-        journalId: journal.id,
-        ledgerAccountId: acc.ledgerAccountId, // ASSET +
-        amount: `${amount}`,
-        side: "DEBIT" as const,
-      },
-      {
-        journalId: journal.id,
-        ledgerAccountId: acc.ledgerAccountId, // LIABILITY +
-        amount: `${amount}`,
-        side: "CREDIT" as const,
-      },
-    ]);
+      // 4️⃣ Double Entry
+      await tx.insert(journalLines).values([
+        {
+          journalId: journal.id,
+          ledgerAccountId: acc.ledgerAccountId, // ASSET +
+          amount: `${amount}`,
+          side: "DEBIT" as const,
+        },
+        {
+          journalId: journal.id,
+          ledgerAccountId: acc.ledgerAccountId, // LIABILITY +
+          amount: `${amount}`,
+          side: "CREDIT" as const,
+        },
+      ]);
 
-    return txn;
-  });
+      return txn;
+    });
+  } catch (error) {
+    console.log("Error at deposit service:", error);
+    throw error;
+  }
 }
 
 export async function withdraw(
   accountId: string,
   amount: number,
-  currency: string
+  currency: string,
 ) {
   return await db.transaction(async (tx) => {
     const [acc] = await tx
@@ -115,7 +114,7 @@ export async function transfer(
   fromId: string,
   toId: string,
   amount: number,
-  currency: string
+  currency: string,
 ) {
   return await db.transaction(async (tx) => {
     const [from] = await tx

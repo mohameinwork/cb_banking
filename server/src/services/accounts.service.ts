@@ -5,40 +5,48 @@ export async function createAccount(
   userId: string,
   currency: string,
   account_number?: string,
-  balance?: number,
 ) {
-  // Creating a ledger account for the new account can be added here
-  const [ledgerAccount] = await db
-    .insert(ledgerAccounts)
-    .values({
-      code: account_number || `ACC-${Date.now()}`,
-      name: `Account Ledger for ${account_number || "New Account"}`,
-      type: "LIABILITY",
-    } as any)
-    .returning();
+  try {
+    // Creating a ledger account for the new account can be added here
+    const [ledgerAccount] = await db
+      .insert(ledgerAccounts)
+      .values({
+        code: account_number || `ACC-${Date.now()}`,
+        name: `Account Ledger for ${account_number || "New Account"}`,
+        type: "LIABILITY",
+      } as any)
+      .returning();
 
-  const [newAccount] = await db
-    .insert(accounts)
-    .values({
-      userId,
-      currency,
-      accountNumber: account_number!,
-      balance: balance || 0,
-      ledgerAccountId: ledgerAccount.id,
-    } as any)
-    .returning();
-  return {
-    ...newAccount,
-    ledgerAccount,
-  };
+    const [newAccount] = await db
+      .insert(accounts)
+      .values({
+        userId,
+        currency,
+        accountNumber: account_number!,
+        ledgerAccountId: ledgerAccount.id,
+      } as any)
+      .returning();
+    return {
+      ...newAccount,
+      ledgerAccount,
+    };
+  } catch (error) {
+    console.error("Error creating account:", error);
+    throw error;
+  }
 }
 
 export async function getAccountById(accountId: string) {
-  const [account] = await db
-    .select()
-    .from(accounts)
-    .where(eq(accounts.id, accountId));
-  return account;
+  try {
+    const [account] = await db
+      .select()
+      .from(accounts)
+      .where(eq(accounts.id, accountId));
+    return account;
+  } catch (error) {
+    console.error("Error fetching account by ID:", error);
+    throw error;
+  }
 }
 
 export async function getAccountsByUserId(userId: string) {

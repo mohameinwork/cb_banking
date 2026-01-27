@@ -11,9 +11,9 @@ import {
 
 export async function register(req: Request, res: Response) {
   try {
-    const { name, email, password, role } = req.body;
+    const { username, email, password } = req.body;
 
-    const user = await registerUser(name, email, password, role);
+    const user = await registerUser(username, email, password);
 
     return res.status(201).json({
       message: "User registered",
@@ -70,8 +70,18 @@ export async function getUsers(req: Request, res: Response) {
 }
 
 export async function changeUserRole(req: Request, res: Response) {
-  const { id } = req.params;
-  const { role } = req.body;
+  const rawId = req.params.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  const { role } = req.body as { role: "admin" | "staff" | "customer" };
+
+  if (!id) {
+    return res.status(400).json({ message: "Invalid user id" });
+  }
+
+  if (!["admin", "staff", "customer"].includes(role)) {
+    return res.status(400).json({ message: "Invalid role" });
+  }
+
   const user = await updateUserRole(id, role);
   res.json({
     message: "User role updated",

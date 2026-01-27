@@ -59,7 +59,7 @@ export default function ExchangePage() {
     }
   }, [amount, rate, direction]);
 
-  const URL = "http://localhost:8000/api";
+  const URL = import.meta.env.VITE_API_URL;
   // Labels based on direction
   const inputLabel =
     direction === "USD_TO_SLSH" ? "Dollar ($)" : "Shilling (Sh)";

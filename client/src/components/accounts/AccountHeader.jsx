@@ -1,7 +1,14 @@
 import { Download, Plus } from "lucide-react";
 import { Button } from "../../components/ui/button";
+import AddAccount from "./AddAccount";
 
-const AccountHeader = () => {
+const AccountHeader = ({
+  formData,
+  setFormData,
+  handleSubmit,
+  open,
+  setOpen,
+}) => {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
@@ -19,9 +26,13 @@ const AccountHeader = () => {
         >
           <Download className="mr-2 h-4 w-4" /> Statements
         </Button>
-        <Button className="bg-primary hover:bg-accent text-white font-bold shadow-lg shadow-primary/20">
-          <Plus className="mr-2 h-4 w-4" /> Open New Account
-        </Button>
+        <AddAccount
+          open={open}
+          setOpen={setOpen}
+          formData={formData}
+          setFormData={setFormData}
+          handleSubmit={handleSubmit}
+        />
       </div>
     </div>
   );

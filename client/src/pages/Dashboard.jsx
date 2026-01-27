@@ -27,7 +27,7 @@ const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const URL = "http://localhost:8000/api";
+  const URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -74,7 +74,7 @@ const Dashboard = () => {
   const activeLoans = loans.filter((loan) => loan.status === "ACTIVE");
   const totalLoanAmount = activeLoans.reduce(
     (total, loan) => total + parseFloat(loan.amount),
-    0
+    0,
   );
   const formattedLoanAmount = `$${totalLoanAmount.toFixed(2)}`;
 
@@ -193,8 +193,8 @@ const Dashboard = () => {
                         tx.amount.startsWith("+")
                           ? "text-emerald-500"
                           : tx.amount.includes("~")
-                          ? "text-accent-foreground"
-                          : "text-foreground"
+                            ? "text-accent-foreground"
+                            : "text-foreground"
                       }`}
                     >
                       {tx.amount}

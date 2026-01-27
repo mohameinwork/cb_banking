@@ -5,7 +5,7 @@ import PageLoader from "../PageLoader";
 const TransactionTable = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const URL = "http://localhost:8000/api";
+  const URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true);
@@ -54,8 +54,8 @@ const TransactionTable = () => {
                           tx.type === "DEPOSIT"
                             ? "bg-green-100 text-green-600"
                             : tx.type === "TRANSFER"
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-orange-100 text-orange-600"
+                              ? "bg-blue-100 text-blue-600"
+                              : "bg-orange-100 text-orange-600"
                         }`}
                     >
                       {tx.type === "TRANSFER" ? (
@@ -81,8 +81,8 @@ const TransactionTable = () => {
                         tx.status === "COMPLETED"
                           ? "bg-green-100 text-green-700"
                           : tx.status === "PENDING"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
                       }`}
                   >
                     {tx.status}

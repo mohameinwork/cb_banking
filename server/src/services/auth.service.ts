@@ -5,19 +5,23 @@ import { accounts, users } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export async function registerUser(
-  name: string,
+  username: string,
   email: string,
   password: string,
-  role: "admin" | "staff" | "customer" = "customer",
 ) {
-  const hashed = await bcrypt.hash(password, 10);
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+    const name = username; // Adjusting to use username as name
+    const [user] = await db
+      .insert(users)
+      .values({ name, email, password: hashed })
+      .returning();
 
-  const [user] = await db
-    .insert(users)
-    .values({ name, email, password: hashed, role })
-    .returning();
-
-  return user;
+    return user;
+  } catch (error) {
+    console.log("Error in registerUser:", error);
+    throw error;
+  }
 }
 
 export async function loginUser(email: string, password: string) {
@@ -89,10 +93,30 @@ export async function deleteUser(id: string) {
 }
 
 export async function getUsersWithAccounts() {
-  return await db
+  const rows = await db
     .select()
     .from(users)
     .leftJoin(accounts, eq(users.id, accounts.userId));
+
+  const usersMap = new Map();
+
+  for (const row of rows) {
+    const user = row.users;
+    const account = row.accounts;
+
+    if (!usersMap.has(user.id)) {
+      usersMap.set(user.id, {
+        ...user,
+        accounts: [],
+      });
+    }
+
+    if (account) {
+      usersMap.get(user.id).accounts.push(account);
+    }
+  }
+
+  return Array.from(usersMap.values());
 }
 
 export async function updateUserRole(

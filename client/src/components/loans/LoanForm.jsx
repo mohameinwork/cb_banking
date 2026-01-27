@@ -12,7 +12,7 @@ import {
 const LoanForm = () => {
   const [loanAmount, setLoanAmount] = useState(500);
   const [termMonth, setTermMonth] = useState("");
-  const URL = "http://localhost:8000/api";
+  const URL = import.meta.env.VITE_API_URL;
   const handleSubmit = async () => {
     // Submit loan request logic here
     try {

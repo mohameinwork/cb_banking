@@ -20,13 +20,13 @@ const router = Router();
 // Create Account
 router.post("/", createAccount);
 // Account Transactions
-router.post("/:id/deposit", validate(depositSchema), deposit);
+router.post("/deposit", validate(depositSchema), deposit);
 
 // Withdrawals
-router.post("/:id/withdraw", validate(withdrawSchema), withdraw);
+router.post("/withdraw", validate(withdrawSchema), withdraw);
 
 // Transfers
-router.post("/:id/transfer", validate(transferSchema), transfer);
+router.post("/transfer", validate(transferSchema), transfer);
 
 // Get accounts
 router.get("/all", getAccounts);

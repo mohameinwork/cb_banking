@@ -6,13 +6,12 @@ import {
 } from "../services/accounts.service";
 export async function createAccount(req: Request, res: Response) {
   try {
-    const { userId, currency, account_number, balance } = req.body;
+    const { userId, currency, account_number } = req.body;
 
     const account = await createAccountService(
       userId,
       currency,
       account_number,
-      balance
     );
     res.status(201).json({ message: "Account created successfully", account });
   } catch (error) {
@@ -24,8 +23,9 @@ export async function createAccount(req: Request, res: Response) {
 
 export async function depositFn(req: Request, res: Response) {
   try {
-    const { id } = req.params;
-    const { amount, currency } = req.body;
+    const { amount, currency, id } = req.body;
+
+    console.log("Deposit request body:", req.body);
 
     const accountId = Array.isArray(id) ? id[0] : id;
     const txn = await deposit(accountId, Number(amount), String(currency));
@@ -39,8 +39,7 @@ export async function depositFn(req: Request, res: Response) {
 
 export async function withdrawFn(req: Request, res: Response) {
   try {
-    const { id } = req.params;
-    const { amount, currency } = req.body;
+    const { amount, currency, id } = req.body;
 
     const accountId = Array.isArray(id) ? id[0] : id;
     const txn = await withdraw(accountId, Number(amount), String(currency));
@@ -63,7 +62,7 @@ export async function transferFn(req: Request, res: Response) {
       fromAccountId,
       toId,
       Number(amount),
-      String(currency)
+      String(currency),
     );
     res.json({ message: "Transfer successful", transaction: txn });
   } catch (error) {

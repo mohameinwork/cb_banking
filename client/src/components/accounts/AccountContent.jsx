@@ -38,6 +38,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import PageLoader from "../PageLoader";
+import DepositDialog from "./DepositDialog";
 
 const AccountContent = ({ transactions, accounts }) => {
   const [selectedAccount, setSelectedAccount] = useState(null);
@@ -50,7 +51,6 @@ const AccountContent = ({ transactions, accounts }) => {
 
   if (!selectedAccount) return <PageLoader />;
 
-  console.log(accounts, selectedAccount);
   return (
     <>
       <TabsContent value="personal" className="space-y-6">
@@ -117,12 +117,6 @@ const AccountContent = ({ transactions, accounts }) => {
               </div>
             </div>
           ))}
-
-          {/* Add New Card Placeholder */}
-          <div className="h-56 w-full rounded-xl border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/10 cursor-pointer transition-colors">
-            <Plus className="h-10 w-10 mb-2 opacity-50" />
-            <span className="font-medium">Add Another Account</span>
-          </div>
         </div>
 
         {/* SELECTED ACCOUNT DETAILS & LEDGER */}
@@ -137,9 +131,7 @@ const AccountContent = ({ transactions, accounts }) => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start bg-emerald-600 hover:bg-emerald-700 text-white">
-                <ArrowDownLeft className="mr-2 h-4 w-4" /> Deposit Funds
-              </Button>
+              <DepositDialog accounts={accounts} />
 
               <Button className="w-full justify-start bg-primary hover:bg-accent text-white">
                 <Send className="mr-2 h-4 w-4" /> Transfer Money
