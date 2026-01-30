@@ -7,7 +7,7 @@ import {
 import {
   createAccount as createAccountService,
   getAllAccounts,
-} from "../services/accounts.service";
+} from "../services/accounts.service.js";
 export async function createAccount(req: Request, res: Response) {
   try {
     const { userId, currency, account_number } = req.body;
