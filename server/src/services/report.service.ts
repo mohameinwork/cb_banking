@@ -1,4 +1,4 @@
-import { db } from "../db";
+import { db } from "../db/index.js";
 import { journalEntries, journalLines, ledgerAccounts } from "../db/schema.js";
 import { and, gte, lte, eq } from "drizzle-orm";
 

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { loanPayments, loans } from "../db/schema.js";
-import { db } from "../db";
+import { db } from "../db/index.js";
 import { eq, sql } from "drizzle-orm";
 
 // Create a loan

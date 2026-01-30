@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
-import { db } from "../db";
+import { db } from "../db/index.js";
 import { accounts, users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
