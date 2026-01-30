@@ -13,65 +13,37 @@ export async function setRates(req: Request, res: Response) {
 
 export async function exchange(req: Request, res: Response) {
   try {
-    const {
-      userId,
-      sourceAccountId,
-      targetAccountId,
-      sourceAmount,
-      sourceCurrency,
-      targetAmount,
-      targetCurrency,
-      rate,
-    } = req.body;
+    const { userId, sourceAccountId, targetAccountId, sourceAmount, rate } =
+      req.body;
 
-    //
-    // 1️⃣ VALIDATE INPUT
-    //
+    if (!userId || !sourceAccountId || !targetAccountId)
+      return res.status(400).json({ message: "Missing required fields" });
+
     if (!sourceAmount || Number(sourceAmount) <= 0)
       return res
         .status(400)
         .json({ message: "Source amount must be greater than zero" });
 
-    if (!targetAmount || Number(targetAmount) <= 0)
-      return res
-        .status(400)
-        .json({ message: "Target amount must be greater than zero" });
-
-    if (!sourceCurrency || !targetCurrency)
-      return res.status(400).json({ message: "Both currencies are required" });
-
-    if (sourceCurrency === targetCurrency)
-      return res.status(400).json({ message: "Currencies must be different" });
-
     if (!rate || Number(rate) <= 0)
-      return res.status(400).json({ message: "Invalid rate" });
+      return res.status(400).json({ message: "Invalid exchange rate" });
 
-    //
-    // 2️⃣ CALL SERVICE
-    //
     const result = await exchangeService({
       userId: String(userId),
       sourceAccountId: String(sourceAccountId),
       targetAccountId: String(targetAccountId),
       sourceAmount: Number(sourceAmount),
-      sourceCurrency: sourceCurrency as "USD" | "SLSH",
-      targetAmount: Number(targetAmount),
-      targetCurrency: targetCurrency as "USD" | "SLSH",
       rate: Number(rate),
     });
 
-    //
-    // 3️⃣ SUCCESS RESPONSE
-    //
     return res.status(201).json({
       message: "Successfully exchanged",
       data: result,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error processing exchange:", error);
 
     return res.status(500).json({
-      message: "Internal server error",
+      message: error.message || "Internal server error",
     });
   }
 }
