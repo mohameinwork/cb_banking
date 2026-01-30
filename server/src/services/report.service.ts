@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { journalEntries, journalLines, ledgerAccounts } from "../db/schema";
+import { journalEntries, journalLines, ledgerAccounts } from "../db/schema.js";
 import { and, gte, lte, eq } from "drizzle-orm";
 
 export async function financialSummary(start: Date, end: Date) {
@@ -13,13 +13,13 @@ export async function financialSummary(start: Date, end: Date) {
     .innerJoin(journalEntries, eq(journalEntries.id, journalLines.journalId))
     .innerJoin(
       ledgerAccounts,
-      eq(ledgerAccounts.id, journalLines.ledgerAccountId)
+      eq(ledgerAccounts.id, journalLines.ledgerAccountId),
     )
     .where(
       and(
         gte(journalEntries.createdAt, start),
-        lte(journalEntries.createdAt, end)
-      )
+        lte(journalEntries.createdAt, end),
+      ),
     );
 
   let assets = 0;
@@ -71,13 +71,13 @@ export async function trialBalance(start: Date, end: Date) {
     .innerJoin(journalEntries, eq(journalEntries.id, journalLines.journalId))
     .innerJoin(
       ledgerAccounts,
-      eq(ledgerAccounts.id, journalLines.ledgerAccountId)
+      eq(ledgerAccounts.id, journalLines.ledgerAccountId),
     )
     .where(
       and(
         gte(journalEntries.createdAt, start),
-        lte(journalEntries.createdAt, end)
-      )
+        lte(journalEntries.createdAt, end),
+      ),
     );
 
   const map = new Map<

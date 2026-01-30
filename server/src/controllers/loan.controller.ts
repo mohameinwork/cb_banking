@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { loanPayments, loans } from "../db/schema";
+import { loanPayments, loans } from "../db/schema.js";
 import { db } from "../db";
 import { eq, sql } from "drizzle-orm";
 

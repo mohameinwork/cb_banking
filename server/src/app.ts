@@ -1,11 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import authRoutes from "./routes/auth.route";
-import accountsRoutes from "./routes/accounts.route";
-import transactionRoute from "./routes/transaction.route";
-import exchangeRoute from "./routes/exchange.route";
-import loanRoute from "./routes/loan.route";
+import authRoutes from "./routes/auth.route.js";
+import accountsRoutes from "./routes/accounts.route.js";
+import transactionRoute from "./routes/transaction.route.js";
+import exchangeRoute from "./routes/exchange.route.js";
+import loanRoute from "./routes/loan.route.js";
 dotenv.config();
 
 const app = express();

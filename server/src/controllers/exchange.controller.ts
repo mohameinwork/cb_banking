@@ -3,7 +3,7 @@ import {
   setRate,
   getRate,
   exchange as exchangeService,
-} from "../services/exchange.service";
+} from "../services/exchange.service.js";
 
 export async function setRates(req: Request, res: Response) {
   const { baseCurrency, quoteCurrency, rate } = req.body;

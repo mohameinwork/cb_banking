@@ -5,7 +5,7 @@ import {
   getLoans,
   makeLoanPayment,
   updateLoan,
-} from "../controllers/loan.controller";
+} from "../controllers/loan.controller.js";
 
 const router = express.Router();
 

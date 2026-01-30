@@ -1,6 +1,6 @@
 import { db } from "../db";
-import { accounts, transactions } from "../db/schema";
-import { ledgerAccounts, journalEntries, journalLines } from "../db/schema";
+import { accounts, transactions } from "../db/schema.js";
+import { ledgerAccounts, journalEntries, journalLines } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 export async function deposit(id: string, amount: number, currency: string) {

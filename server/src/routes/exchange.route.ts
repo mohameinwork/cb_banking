@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { exchange, setRates } from "../controllers/exchange.controller";
-import { validate } from "../middleware/validate";
+import { exchange, setRates } from "../controllers/exchange.controller.js";
+import { validate } from "../middleware/validate.js";
 // import { auth } from "../middlewares/auth";
 // import { requireRole } from "../middlewares/roles";
-import { setRateSchema, exchangeSchema } from "../validation/exchange.v";
+import { setRateSchema, exchangeSchema } from "../validation/exchange.v.js";
 
 const router = Router();
 

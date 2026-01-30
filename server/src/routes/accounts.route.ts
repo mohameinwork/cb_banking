@@ -5,15 +5,14 @@ import {
   transferFn as transfer,
   createAccount,
   getAccounts,
-} from "../controllers/accounts.controller";
-import { auth } from "../middleware/auth";
+} from "../controllers/accounts.controller.js";
 // import { idempotent } from "../middlewares/idempotency.ts";
-import { validate } from "../middleware/validate";
+import { validate } from "../middleware/validate.js";
 import {
   depositSchema,
   withdrawSchema,
   transferSchema,
-} from "../validation/transaction.v";
+} from "../validation/transaction.v.js";
 
 const router = Router();
 

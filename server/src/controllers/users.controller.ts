@@ -7,7 +7,7 @@ import {
   updateUserPassword,
   getUsersWithAccounts,
   updateUserRole,
-} from "../services/auth.service";
+} from "../services/auth.service.js";
 
 export async function register(req: Request, res: Response) {
   try {

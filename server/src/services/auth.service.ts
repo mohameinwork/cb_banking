@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import { db } from "../db";
-import { accounts, users } from "../db/schema";
+import { accounts, users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 export async function registerUser(

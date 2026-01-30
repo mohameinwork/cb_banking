@@ -1,4 +1,4 @@
-import { accounts, ledgerAccounts } from "../db/schema";
+import { accounts, ledgerAccounts } from "../db/schema.js";
 import { db } from "../db";
 import { eq } from "drizzle-orm";
 export async function createAccount(

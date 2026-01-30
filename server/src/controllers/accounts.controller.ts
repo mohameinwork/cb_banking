@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { deposit, transfer, withdraw } from "../services/transaction.service";
+import {
+  deposit,
+  transfer,
+  withdraw,
+} from "../services/transaction.service.js";
 import {
   createAccount as createAccountService,
   getAllAccounts,

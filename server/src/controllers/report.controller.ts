@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import * as Reports from "../services/report.service";
-import { dailyRange, monthlyRange, yearlyRange } from "../utils/date";
+import * as Reports from "../services/report.service.js";
+import { dailyRange, monthlyRange, yearlyRange } from "../utils/date.js";
 
 export async function daily(req: Request, res: Response) {
   const { start, end } = dailyRange();

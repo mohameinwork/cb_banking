@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { auth } from "../middleware/auth";
+import { auth } from "../middleware/auth.js";
 import {
   daily,
   monthly,
   yearly,
   trial,
-} from "../controllers/report.controller";
+} from "../controllers/report.controller.js";
 
 const router = Router();
 
