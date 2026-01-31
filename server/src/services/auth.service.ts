@@ -92,51 +92,72 @@ export async function deleteUser(id: string) {
   await db.delete(users).where(eq(users.id, id));
 }
 
-export async function getUsersWithAccounts() {
-  const rows = await db
-    .select()
-    .from(users)
-    .leftJoin(accounts, eq(users.id, accounts.userId));
+type UserWithAccounts = typeof users.$inferSelect & {
+  accounts: (typeof accounts.$inferSelect)[];
+};
 
-  const usersMap = new Map();
+export async function getUsersWithAccounts(): Promise<UserWithAccounts[]> {
+  try {
+    const rows = await db
+      .select()
+      .from(users)
+      .leftJoin(accounts, eq(users.id, accounts.userId));
 
-  for (const row of rows) {
-    const user = row.users;
-    const account = row.accounts;
+    const usersMap = new Map<string, UserWithAccounts>();
 
-    if (!usersMap.has(user.id)) {
-      usersMap.set(user.id, {
-        ...user,
-        accounts: [],
-      });
+    for (const row of rows) {
+      const user = row.users;
+      const account = row.accounts;
+
+      // 🛡️ Safety guard (important)
+      if (!user) continue;
+
+      if (!usersMap.has(user.id)) {
+        usersMap.set(user.id, {
+          ...user,
+          accounts: [],
+        });
+      }
+
+      if (account) {
+        usersMap.get(user.id)!.accounts.push(account);
+      }
     }
 
-    if (account) {
-      usersMap.get(user.id).accounts.push(account);
-    }
+    return [...usersMap.values()];
+  } catch (error) {
+    console.log("Error in registerUser:", error);
+    throw error;
   }
-
-  return Array.from(usersMap.values());
 }
-
 export async function updateUserRole(
   id: string,
   role: "admin" | "staff" | "customer",
 ) {
-  const [user] = await db
-    .update(users)
-    .set({ role })
-    .where(eq(users.id, id))
-    .returning();
-  return user;
+  try {
+    const [user] = await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  } catch (error) {
+    console.log("Error at update user role:", error);
+    throw error;
+  }
 }
 
 export async function getUserWithAccount(userId: string) {
-  const [user] = await db.select().from(users).where(eq(users.id, userId));
-  if (!user) return null;
-  const userAccounts = await db
-    .select()
-    .from(accounts)
-    .where(eq(accounts.userId, userId));
-  return { ...user, accounts: userAccounts };
+  try {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) return null;
+    const userAccounts = await db
+      .select()
+      .from(accounts)
+      .where(eq(accounts.userId, userId));
+    return { ...user, accounts: userAccounts };
+  } catch (error) {
+    console.log("Error at getting user with accounts", error);
+    throw error;
+  }
 }

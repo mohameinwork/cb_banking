@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import LoanCard from "../components/loans/LoanCard";
 import LoanList from "../components/loans/LoanList";
 import LoanForm from "../components/loans/LoanForm";
 import PageLoader from "../components/PageLoader";
+import ActiveLoansCard from "../components/loans/LoanCard";
 export default function LoansPage() {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -43,6 +43,7 @@ export default function LoansPage() {
 
   if (loading) return <PageLoader />;
 
+  console.log(loans);
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-3xl font-semibold text-primary uppercase tracking-widest mb-8">
@@ -54,7 +55,10 @@ export default function LoansPage() {
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-primary">Active Loan</h2>
 
-          <LoanCard handleMakePayment={handleMakePayment} loans={loans} />
+          <ActiveLoansCard
+            handleMakePayment={handleMakePayment}
+            loans={loans}
+          />
 
           {/* Past Payments List */}
           <LoanList loans={loans} />

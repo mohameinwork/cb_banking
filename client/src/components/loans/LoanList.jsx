@@ -9,7 +9,7 @@ const formatDate = (dateString) => {
   });
 };
 
-export default function LoanHistoryList({ loans = [] }) {
+export default function LoanList({ loans = [] }) {
   // Assuming 'data' is the array from your API response
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg">
@@ -19,29 +19,19 @@ export default function LoanHistoryList({ loans = [] }) {
 
       <div className="space-y-3">
         {loans.map((item) => {
-          const loan = item.loans;
-          const payment = item.loan_payments;
-
-          // Determine if this specific entry represents a completed payment or just an active loan
-          const isPaid = payment !== null;
-
-          // Use payment date if paid, otherwise loan creation date
-          const displayDate = isPaid ? payment.createdAt : loan.createdAt;
-
-          // Use payment amount if paid, otherwise loan principal
-          const displayAmount = isPaid ? payment.amount : loan.principal;
+          const isPaid = item.type === "PAYMENT";
 
           return (
             <div
-              key={isPaid ? payment.id : loan.id}
+              key={item.id}
               className={`flex justify-between items-center p-3 rounded border transition-colors ${
                 isPaid
                   ? "bg-green-50 border-green-100"
                   : "bg-gray-50 border-gray-100"
               }`}
             >
+              {/* LEFT */}
               <div className="flex items-center gap-3">
-                {/* ICON: Green Check if paid, Blue Clock if active/pending */}
                 {isPaid ? (
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 ) : (
@@ -56,25 +46,26 @@ export default function LoanHistoryList({ loans = [] }) {
                   >
                     {isPaid ? "Repayment Received" : "Loan Disbursed"}
                   </p>
+
                   <p className="text-xs text-gray-500">
-                    {/* Truncate the UUID to make it look cleaner (e.g., #c30e954a) */}
-                    ID: #{isPaid ? payment.id.slice(0, 8) : loan.id.slice(0, 8)}{" "}
-                    • {formatDate(displayDate)}
+                    ID: #{item.id.slice(0, 8)} • {formatDate(item.createdAt)}
                   </p>
                 </div>
               </div>
 
+              {/* RIGHT */}
               <div className="text-right">
                 <span
                   className={`font-bold ${
                     isPaid ? "text-green-600" : "text-primary"
                   }`}
                 >
-                  {isPaid ? "+" : ""} ${parseFloat(displayAmount).toFixed(2)}
+                  {isPaid ? "+" : ""} ${Number(item.amount).toFixed(2)}
                 </span>
+
                 {!isPaid && (
                   <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
-                    {loan.termMonths} Month Term
+                    {item.termMonths} Month Term
                   </p>
                 )}
               </div>

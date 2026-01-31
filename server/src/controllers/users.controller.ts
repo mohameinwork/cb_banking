@@ -66,7 +66,10 @@ export async function updatePassword(req: Request, res: Response) {
 
 export async function getUsers(req: Request, res: Response) {
   const users = await getUsersWithAccounts();
-  res.json({ users });
+  res.json({
+    message: "Users fetched successfully",
+    users,
+  });
 }
 
 export async function changeUserRole(req: Request, res: Response) {

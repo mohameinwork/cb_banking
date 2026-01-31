@@ -40,14 +40,35 @@ export async function createLoan(req: Request, res: Response) {
 // Get All Loans
 export async function getLoans(req: Request, res: Response) {
   try {
-    const data = await db
+    const rows = await db
       .select()
       .from(loans)
       .leftJoin(loanPayments, eq(loans.id, loanPayments.loanId));
 
+    const normalized = rows.map((row) => {
+      if (row.loan_payments) {
+        return {
+          id: row.loan_payments.id,
+          type: "PAYMENT",
+          amount: row.loan_payments.amount,
+          createdAt: row.loan_payments.createdAt,
+          loanId: row.loans.id,
+        };
+      }
+
+      return {
+        id: row.loans.id,
+        type: "LOAN",
+        amount: row.loans.principal,
+        createdAt: row.loans.createdAt,
+        termMonths: row.loans.termMonths,
+        status: row.loans.status,
+      };
+    });
+
     return res.json({
       message: "Loans fetched successfully",
-      data,
+      data: normalized,
     });
   } catch (error) {
     console.error("Get loans error:", error);

@@ -18,10 +18,9 @@ const UserTable = ({ users, loading }) => {
 
       <tbody className="divide-y divide-gray-100">
         {users.map((user) => {
-          const accounts = Array.isArray(user.accounts) ? user.accounts : [];
-
-          const hasActiveAccount = accounts.some(
-            (acc) => acc.status === "ACTIVE",
+          const hasAccounts = user.accounts.length > 0;
+          const hasActiveAccount = user.accounts.some(
+            (account) => account.status === "ACTIVE",
           );
 
           return (
@@ -29,9 +28,9 @@ const UserTable = ({ users, loading }) => {
               {/* NAME */}
               <td className="p-4">
                 <div className="font-bold text-primary capitalize">
-                  {user.name}
+                  {user.name || "Unknown User"}
                 </div>
-                <div className="text-xs text-gray-500">{user.email}</div>
+                <div className="text-xs text-gray-500">{user.email || "—"}</div>
               </td>
 
               {/* ROLE */}
@@ -48,7 +47,7 @@ const UserTable = ({ users, loading }) => {
 
               {/* ACCOUNT STATUS */}
               <td className="p-4">
-                {accounts.length === 0 ? (
+                {!hasAccounts ? (
                   <span className="px-2 py-1 rounded text-xs font-bold uppercase bg-gray-100 text-gray-600">
                     No Account
                   </span>
