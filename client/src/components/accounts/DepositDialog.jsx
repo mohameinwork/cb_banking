@@ -117,10 +117,7 @@ export default function DepositDialog({ accounts = [] }) {
                 ) : (
                   <>
                     <SelectItem value="acc_usd_001">
-                      100-2938-11 (USD)
-                    </SelectItem>
-                    <SelectItem value="acc_slsh_002">
-                      400-9921-22 (SLSH)
+                      placing an order for a new account
                     </SelectItem>
                   </>
                 )}

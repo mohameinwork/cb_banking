@@ -3,6 +3,7 @@ import {
   setRate,
   getRate,
   exchange as exchangeService,
+  getExchangeTransactions,
 } from "../services/exchange.service.js";
 
 export async function setRates(req: Request, res: Response) {
@@ -11,39 +12,47 @@ export async function setRates(req: Request, res: Response) {
   res.json({ message: "Rate updated", rate: updated });
 }
 
+export async function getRates(req: Request, res: Response) {
+  try {
+    const { base = "USD", quote = "SLSH" } = req.query;
+    const rate = await getRate(String(base), String(quote));
+    res.json({
+      baseCurrency: base,
+      quoteCurrency: quote,
+      rate,
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    console.error("Error fetching rate:", error);
+    res.status(404).json({ message: error.message || "Rate not found" });
+  }
+}
+
 export async function exchange(req: Request, res: Response) {
   try {
-    const { userId, sourceAccountId, targetAccountId, sourceAmount, rate } =
-      req.body;
+    const { targetAccountId, targetAmount, rate } = req.body;
 
-    if (!userId || !sourceAccountId || !targetAccountId)
-      return res.status(400).json({ message: "Missing required fields" });
-
-    if (!sourceAmount || Number(sourceAmount) <= 0)
-      return res
-        .status(400)
-        .json({ message: "Source amount must be greater than zero" });
-
-    if (!rate || Number(rate) <= 0)
-      return res.status(400).json({ message: "Invalid exchange rate" });
-
-    const result = await exchangeService({
-      userId: String(userId),
-      sourceAccountId: String(sourceAccountId),
-      targetAccountId: String(targetAccountId),
-      sourceAmount: Number(sourceAmount),
-      rate: Number(rate),
+    const data = await exchangeService({
+      targetAccountId,
+      targetAmount,
+      rate,
     });
 
-    return res.status(201).json({
-      message: "Successfully exchanged",
-      data: result,
-    });
+    res.json({ message: "Exchange successful", data });
   } catch (error: any) {
     console.error("Error processing exchange:", error);
 
     return res.status(500).json({
       message: error.message || "Internal server error",
     });
+  }
+}
+export async function getExchanges(req: Request, res: Response) {
+  try {
+    const exchanges = await getExchangeTransactions();
+    res.json({ data: exchanges });
+  } catch (error: any) {
+    console.error("Error fetching exchanges:", error);
+    res.status(500).json({ message: "Failed to fetch exchanges" });
   }
 }

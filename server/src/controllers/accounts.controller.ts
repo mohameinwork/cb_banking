@@ -10,13 +10,15 @@ import {
 } from "../services/accounts.service.js";
 export async function createAccount(req: Request, res: Response) {
   try {
-    const { userId, currency, account_number } = req.body;
+    const { currency, type, name, phone, companyAccountId } = req.body;
 
-    const account = await createAccountService(
-      userId,
+    const account = await createAccountService({
+      type,
+      name,
+      phone,
+      companyAccountId,
       currency,
-      account_number,
-    );
+    });
     res.status(201).json({ message: "Account created successfully", account });
   } catch (error) {
     console.error("Error creating account:", error);
@@ -27,52 +29,82 @@ export async function createAccount(req: Request, res: Response) {
 
 export async function depositFn(req: Request, res: Response) {
   try {
-    const { amount, currency, id } = req.body;
+    const { id, amount, currency } = req.body;
 
-    console.log("Deposit request body:", req.body);
+    const accountId = parseId(id);
+    const parsedAmount = parseAmount(amount);
+    const parsedCurrency = parseCurrency(currency);
 
-    const accountId = Array.isArray(id) ? id[0] : id;
-    const txn = await deposit(accountId, Number(amount), String(currency));
-    res.json({ message: "Deposit successful", transaction: txn });
-  } catch (error) {
-    console.error("Error processing deposit:", error);
-    res.status(500).json({ message: "Internal server error" });
-    return;
+    const txn = await deposit(accountId, parsedAmount, parsedCurrency);
+
+    return res.status(200).json({
+      message: "Deposit successful",
+      data: txn,
+    });
+  } catch (error: any) {
+    console.error("Deposit error:", error);
+
+    return res.status(400).json({
+      message: error.message || "Failed to deposit",
+    });
   }
 }
 
 export async function withdrawFn(req: Request, res: Response) {
   try {
-    const { amount, currency, id } = req.body;
+    const { id, amount, currency } = req.body;
 
-    const accountId = Array.isArray(id) ? id[0] : id;
-    const txn = await withdraw(accountId, Number(amount), String(currency));
-    res.json({ message: "Withdrawal successful", transaction: txn });
-  } catch (error) {
-    console.error("Error processing withdrawal:", error);
-    res.status(500).json({ message: "Internal server error" });
-    return;
+    const accountId = parseId(id);
+    const parsedAmount = parseAmount(amount);
+    const parsedCurrency = parseCurrency(currency);
+
+    const txn = await withdraw(accountId, parsedAmount, parsedCurrency);
+
+    return res.status(200).json({
+      message: "Withdrawal successful",
+      data: txn,
+    });
+  } catch (error: any) {
+    console.error("Withdraw error:", error);
+
+    return res.status(400).json({
+      message: error.message || "Failed to withdraw",
+    });
   }
 }
-
 export async function transferFn(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const { toAccountId, amount, currency } = req.body;
 
-    const fromAccountId = Array.isArray(id) ? id[0] : id;
-    const toId = Array.isArray(toAccountId) ? toAccountId[0] : toAccountId;
+    const fromAccountId = parseId(id);
+    const targetAccountId = parseId(toAccountId);
+    const parsedAmount = parseAmount(amount);
+    const parsedCurrency = parseCurrency(currency);
+
+    if (fromAccountId === targetAccountId) {
+      return res.status(400).json({
+        message: "Cannot transfer to the same account",
+      });
+    }
+
     const txn = await transfer(
       fromAccountId,
-      toId,
-      Number(amount),
-      String(currency),
+      targetAccountId,
+      parsedAmount,
+      parsedCurrency,
     );
-    res.json({ message: "Transfer successful", transaction: txn });
-  } catch (error) {
-    console.error("Error processing transfer:", error);
-    res.status(500).json({ message: "Internal server error" });
-    return;
+
+    return res.status(200).json({
+      message: "Transfer successful",
+      data: txn,
+    });
+  } catch (error: any) {
+    console.error("Transfer error:", error);
+
+    return res.status(400).json({
+      message: error.message || "Failed to transfer",
+    });
   }
 }
 
@@ -89,4 +121,25 @@ export async function getAccounts(req: Request, res: Response) {
     res.status(500).json({ message: "Internal server error" });
     return;
   }
+}
+
+// Helper functions for service layer
+function parseId(id: any): string {
+  if (!id) throw new Error("ID is required");
+  return Array.isArray(id) ? id[0] : id;
+}
+
+function parseAmount(amount: any): number {
+  const parsed = Number(amount);
+  if (!parsed || parsed <= 0) {
+    throw new Error("Amount must be greater than zero");
+  }
+  return parsed;
+}
+
+function parseCurrency(currency: any): "USD" | "SLSH" {
+  if (currency !== "USD" && currency !== "SLSH") {
+    throw new Error("Invalid currency");
+  }
+  return currency;
 }

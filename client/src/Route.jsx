@@ -8,6 +8,8 @@ import TransactionPage from "./pages/TransactionPage";
 import LoansPage from "./pages/LoanPage";
 import ReportPage from "./pages/ReportPage";
 import QuotationPage from "./pages/QuotationPage";
+import QuotationCreationPage from "./pages/QuotationCreationPage";
+import QuotationDetailsPage from "./components/quotation/QuotationDetailsPage";
 import UsersPage from "./pages/UsersPage";
 
 export const router = createBrowserRouter([
@@ -42,6 +44,14 @@ export const router = createBrowserRouter([
       {
         path: "quotations",
         element: <QuotationPage />,
+      },
+      {
+        path: "quotations/new",
+        element: <QuotationCreationPage />,
+      },
+      {
+        path: "quotations/:id",
+        element: <QuotationDetailsPage />,
       },
       {
         path: "loans",

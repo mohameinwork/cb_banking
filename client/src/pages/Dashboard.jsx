@@ -82,134 +82,207 @@ const Dashboard = () => {
 
   if (loading) return <PageLoader />;
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       {/* 1. Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-secondary tracking-tight">
-            Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            Welcome back, Mohamein. Here's your financial overview.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="border-secondary text-secondary hover:bg-secondary hover:text-white"
-          >
-            <ArrowDownLeft className="mr-2 h-4 w-4" /> Request
-          </Button>
-          <Button className="bg-primary hover:bg-accent text-white font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105">
-            <ArrowUpRight className="mr-2 h-4 w-4" /> Send Money
-          </Button>
-        </div>
-      </div>
-
-      {/* 2. Metrics Row */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        {/* Metric 1: USD Balance */}
-        <BalanceCards
-          title="USD Balance"
-          type="USD"
-          amount={usdAmount}
-          icon={DollarSign}
-        />
-
-        {/* Metric 2: SLSH Balance */}
-        <BalanceCards title="SLSH Balance" type="SLSH" amount={slshAmount} />
-
-        {/* Metric 3: Active Loans */}
-        <BalanceCards
-          title="Active Loans"
-          type="Loan"
-          amount={formattedLoanAmount}
-          dueDate={dueDate}
-          icon={CreditCard}
-        />
-
-        {/* Metric 4: Total Profit (Admin/Personal View) */}
-        <BalanceCards
-          title="Total Income"
-          type="income"
-          amount="$8,750.00"
-          icon={TrendingUp}
-        />
-      </div>
-
-      {/* 3. Main Chart Section */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 mb-8">
-        {/* Left: Cash Flow (Span 4) */}
-        <div className="col-span-4">
-          <CashFlowChart />
-        </div>
-
-        {/* Right: Portfolio (Span 3) */}
-        <div className="col-span-3">
-          <PortfolioChart />
-        </div>
-      </div>
-
-      {/* 4. Bottom Section: Trends & Transactions */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        {/* Left: Exchange Trends (Span 3) */}
-        <div className="col-span-3">
-          <ExchangeTrendChart />
-        </div>
-
-        {/* Right: Recent Transactions Table (Span 4) */}
-        <Card className="col-span-4 shadow-sm border-border/50">
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest financial movements.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {transactions.map((tx) => (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-9 w-9 bg-secondary/10">
-                      <AvatarFallback className="text-secondary font-bold text-xs">
-                        {tx.type.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium leading-none">
-                        {tx.type}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {tx.createdAt
-                          ? new Date(tx.createdAt).toLocaleString()
-                          : "--"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`text-sm font-bold ${
-                        tx.amount.startsWith("+")
-                          ? "text-emerald-500"
-                          : tx.amount.includes("~")
-                            ? "text-accent-foreground"
-                            : "text-foreground"
-                      }`}
-                    >
-                      {tx.amount}
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/50 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+              <p className="text-slate-600 text-lg">
+                Welcome back! Here's your financial overview.
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
-    </>
+
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* 2. Metrics Row */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Metric 1: USD Balance */}
+          <div className="group">
+            <BalanceCards
+              title="USD Balance"
+              type="USD"
+              amount={usdAmount}
+              icon={DollarSign}
+              className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 group-hover:scale-105"
+            />
+          </div>
+
+          {/* Metric 2: SLSH Balance */}
+          <div className="group">
+            <BalanceCards
+              title="SLSH Balance"
+              type="SLSH"
+              amount={slshAmount}
+              className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 group-hover:scale-105"
+            />
+          </div>
+
+          {/* Metric 3: Active Loans */}
+          <div className="group">
+            <BalanceCards
+              title="Active Loans"
+              type="Loan"
+              amount={formattedLoanAmount}
+              dueDate={dueDate}
+              icon={CreditCard}
+              className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-200/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 group-hover:scale-105"
+            />
+          </div>
+
+          {/* Metric 4: Total Profit (Admin/Personal View) */}
+          <div className="group">
+            <BalanceCards
+              title="Total Income"
+              type="income"
+              amount="$8,750.00"
+              icon={TrendingUp}
+              className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 group-hover:scale-105"
+            />
+          </div>
+        </div>
+
+        {/* 3. Main Chart Section */}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
+          {/* Left: Cash Flow (Span 4) */}
+          <div className="col-span-4">
+            <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200/50 overflow-hidden hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300">
+              <CashFlowChart />
+            </div>
+          </div>
+
+          {/* Right: Portfolio (Span 3) */}
+          <div className="col-span-3">
+            <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200/50 overflow-hidden hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300">
+              <PortfolioChart />
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Bottom Section: Trends & Transactions */}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
+          {/* Left: Exchange Trends (Span 3) */}
+          <div className="col-span-3">
+            <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200/50 overflow-hidden hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300">
+              <ExchangeTrendChart />
+            </div>
+          </div>
+
+          {/* Right: Recent Transactions Table (Span 4) */}
+          <Card className="col-span-4 bg-white shadow-lg shadow-slate-200/50 border-slate-200/50 hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-300">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-bold text-slate-900">
+                    Recent Transactions
+                  </CardTitle>
+                  <CardDescription className="text-slate-600 mt-1">
+                    Your latest financial movements
+                  </CardDescription>
+                </div>
+                <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <ArrowUpRight className="h-5 w-5 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {transactions.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <ArrowUpRight className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <p className="text-sm">No transactions yet</p>
+                  </div>
+                ) : (
+                  transactions.slice(0, 8).map((tx, index) => (
+                    <div
+                      key={tx.id}
+                      className="flex items-center justify-between p-4 hover:bg-slate-50/80 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200/50 group"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                            tx.type === "DEPOSIT"
+                              ? "bg-gradient-to-br from-green-500 to-emerald-600"
+                              : tx.type === "WITHDRAW"
+                                ? "bg-gradient-to-br from-red-500 to-red-600"
+                                : tx.type === "EXCHANGE"
+                                  ? "bg-gradient-to-br from-blue-500 to-blue-600"
+                                  : "bg-gradient-to-br from-slate-500 to-slate-600"
+                          }`}
+                        >
+                          {tx.type.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold text-slate-900 capitalize">
+                            {tx.type.toLowerCase().replace("_", " ")}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {tx.createdAt
+                              ? new Date(tx.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )
+                              : "--"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div
+                            className={`text-sm font-bold ${
+                              tx.amount.startsWith("+")
+                                ? "text-emerald-600"
+                                : tx.amount.includes("~")
+                                  ? "text-slate-600"
+                                  : "text-slate-900"
+                            }`}
+                          >
+                            {tx.amount}
+                          </div>
+                          <div className="text-xs text-slate-500 uppercase">
+                            {tx.currency}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-slate-200"
+                        >
+                          <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {transactions.length > 8 && (
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <Button
+                    variant="outline"
+                    className="w-full border-slate-300 text-slate-700 hover:bg-slate-50"
+                  >
+                    View All Transactions
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 };
 

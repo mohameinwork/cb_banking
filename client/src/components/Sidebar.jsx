@@ -40,7 +40,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 font-medium text-sm",
       isActive
         ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25 translate-x-1"
-        : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary"
+        : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary",
     );
   };
 
@@ -50,7 +50,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       <div
         className={cn(
           "fixed inset-0 z-40 bg-black/50 md:hidden transition-opacity",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
       />
@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen w-64 bg-card border-r border-border transition-transform duration-300 md:translate-x-0 md:static",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Brand Header */}

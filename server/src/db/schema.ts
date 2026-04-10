@@ -19,14 +19,25 @@ export const users = pgTable("users", {
 
 export const accounts = pgTable("accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+  companyAccountId: uuid("company_account_id"), // For company accounts, this links to the parent company account
+  // NEW 👇
+  type: text("type").$type<"PERSON" | "COMPANY">().notNull(),
+
+  name: text("name").notNull(), // person name OR company name
+  phone: text("phone").notNull(),
+
+  // EXISTING 👇
   accountNumber: text("account_number").notNull().unique(),
-  currency: text("currency").notNull(), // USD|SLSH
-  balance: numeric("balance", { precision: 18, scale: 2 }).default("0.00"),
-  status: text("status").default("ACTIVE"),
-  ledgerAccountId: uuid("ledger_account_id"), // FK to ledger_accounts.id
+  currency: text("currency").$type<"USD" | "SLSH">().notNull(),
+
+  balance: numeric("balance", { precision: 18, scale: 2 })
+    .notNull()
+    .default("0"),
+
+  status: text("status").$type<"ACTIVE" | "INACTIVE">().default("ACTIVE"),
+
+  ledgerAccountId: uuid("ledger_account_id").notNull(),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -93,6 +104,9 @@ export const ledgerAccounts = pgTable("ledger_accounts", {
 export const journalEntries = pgTable("journal_entries", {
   id: uuid("id").defaultRandom().primaryKey(),
   description: text("description"),
+  transactionId: uuid("transaction_id")
+    .notNull()
+    .references(() => transactions.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -117,11 +131,27 @@ export const journalLines = pgTable("journal_lines", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const quotation = pgTable("quotation", {
+export const quotations = pgTable("quotations", {
   id: uuid("id").defaultRandom().primaryKey(),
-  description: text("description").notNull(),
+  companyAccountId: uuid("company_account_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  paidAmount: numeric("paid_amount", { precision: 18, scale: 2 }).default(
+    "0.00",
+  ),
+  items: jsonb("items").notNull(),
+  total: numeric("total", { precision: 18, scale: 2 }).notNull(),
+  status: text("status")
+    .$type<"DRAFT" | "PAID" | "PARTIAL" | "UNPAID">()
+    .default("DRAFT"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const quotationPayments = pgTable("quotation_payments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  quotationId: uuid("quotation_id")
+    .notNull()
+    .references(() => quotations.id),
   amount: numeric("amount", { precision: 18, scale: 2 }).notNull(),
-  company_name: text("company_name").notNull(),
-  container_no: text("container_no").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

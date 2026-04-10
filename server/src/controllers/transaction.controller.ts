@@ -1,9 +1,15 @@
 import { Request, Response } from "express";
-import { getTransactions } from "../services/transaction.service.js";
+import {
+  getAccountTransactions,
+  getAllTransactions,
+} from "../services/transaction.service.js";
 
 export const getAllTran = async (req: Request, res: Response) => {
   try {
-    const transactions = await getTransactions();
+    const accountId = (req.query.accountId as string) ?? "";
+    const transactions = accountId
+      ? await getAccountTransactions(accountId)
+      : await getAllTransactions();
 
     res.status(200).json({
       message: "Fetched Successfully",

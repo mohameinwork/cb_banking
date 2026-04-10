@@ -1,31 +1,73 @@
 import { accounts, ledgerAccounts } from "../db/schema.js";
 import { db } from "../db/index.js";
 import { eq } from "drizzle-orm";
-export async function createAccount(
-  userId: string,
-  currency: string,
-  account_number?: string,
-) {
+import { v4 as uuidv4 } from "uuid";
+export async function createAccount({
+  type,
+  name,
+  phone,
+  currency,
+}: {
+  type: "PERSON" | "COMPANY";
+  name: string;
+  phone: string;
+  currency: "USD" | "SLSH";
+}) {
   try {
-    // Creating a ledger account for the new account can be added here
+    //
+    // 1️⃣ VALIDATION
+    //
+    if (!type) throw new Error("Account type is required");
+    if (!name) throw new Error("Name is required");
+    if (!phone) throw new Error("Phone is required");
+    if (!currency) throw new Error("Currency is required");
+
+    let companyAccountId: string | null = null;
+    // Check the type of the account being created and ensure companyAccountId is provided for COMPANY type
+    if (type === "COMPANY") {
+      companyAccountId = uuidv4(); // Generate a new UUID for the company account
+    } else {
+      companyAccountId = null; // Ensure it's null for PERSON type
+    }
+    //
+    // 2️⃣ GENERATE ACCOUNT NUMBER
+    //
+    const accountNumber = Math.floor(
+      1000000 + Math.random() * 9000000,
+    ).toString();
+
+    //
+    // 3️⃣ CREATE LEDGER ACCOUNT
+    //
     const [ledgerAccount] = await db
       .insert(ledgerAccounts)
       .values({
-        code: account_number || `ACC-${Date.now()}`,
-        name: `Account Ledger for ${account_number || "New Account"}`,
-        type: "LIABILITY",
+        code: `ACC-${accountNumber}`,
+        name: `${name} (${currency})`,
+        type: "LIABILITY", // user balances are liabilities
       } as any)
       .returning();
 
+    //
+    // 4️⃣ CREATE ACCOUNT
+    //
     const [newAccount] = await db
       .insert(accounts)
       .values({
-        userId,
+        type,
+        name,
+        phone,
         currency,
-        accountNumber: account_number!,
+        accountNumber,
+        companyAccountId,
+        balance: "0.00",
         ledgerAccountId: ledgerAccount.id,
       } as any)
       .returning();
+
+    //
+    // 5️⃣ RETURN CLEAN RESPONSE
+    //
     return {
       ...newAccount,
       ledgerAccount,
@@ -49,17 +91,9 @@ export async function getAccountById(accountId: string) {
   }
 }
 
-export async function getAccountsByUserId(userId: string) {
-  const userAccounts = await db
-    .select()
-    .from(accounts)
-    .where(eq(accounts.userId, userId));
-  return userAccounts;
-}
-
 export async function updateAccountStatus(
   accountId: string,
-  status: "ACTIVE" | "SUSPENDED" | "CLOSED",
+  status: "ACTIVE" | "INACTIVE",
 ) {
   await db.update(accounts).set({ status }).where(eq(accounts.id, accountId));
 }
