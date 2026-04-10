@@ -5,7 +5,7 @@ import {
   loginUser,
   registerUser,
   updateUserPassword,
-  getUsersWithAccounts,
+  getUsers as getUsersService,
   updateUserRole,
 } from "../services/auth.service.js";
 
@@ -65,7 +65,7 @@ export async function updatePassword(req: Request, res: Response) {
 }
 
 export async function getUsers(req: Request, res: Response) {
-  const users = await getUsersWithAccounts();
+  const users = await getUsersService();
   res.json({
     message: "Users fetched successfully",
     users,

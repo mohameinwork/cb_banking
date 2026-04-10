@@ -10,13 +10,12 @@ import {
 } from "../services/accounts.service.js";
 export async function createAccount(req: Request, res: Response) {
   try {
-    const { currency, type, name, phone, companyAccountId } = req.body;
+    const { currency, type, name, phone } = req.body;
 
     const account = await createAccountService({
       type,
       name,
       phone,
-      companyAccountId,
       currency,
     });
     res.status(201).json({ message: "Account created successfully", account });

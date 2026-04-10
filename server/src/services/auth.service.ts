@@ -34,18 +34,6 @@ export async function loginUser(email: string, password: string) {
   const match = await bcrypt.compare(password, user.password);
   if (!match) throw new Error("Invalid credentials");
 
-  // 3️⃣ Fetch user accounts
-  const accountsTable = await db
-    .select({
-      id: accounts.id,
-      currency: accounts.currency,
-      balance: accounts.balance,
-      ledgerAccountId: accounts.ledgerAccountId,
-      status: accounts.status,
-    })
-    .from(accounts)
-    .where(eq(accounts.userId, user.id));
-
   // 4️⃣ Generate JWT
   const secret = process.env.JWT_SECRET!;
   const expiresIn = (process.env.JWT_EXPIRES_IN ??
@@ -67,7 +55,6 @@ export async function loginUser(email: string, password: string) {
       name: user.name,
       email: user.email,
       role: user.role,
-      accountsTable,
     },
     token,
   };
@@ -92,42 +79,15 @@ export async function deleteUser(id: string) {
   await db.delete(users).where(eq(users.id, id));
 }
 
-type UserWithAccounts = typeof users.$inferSelect & {
-  accounts: (typeof accounts.$inferSelect)[];
-};
-
-export async function getUsersWithAccounts(): Promise<UserWithAccounts[]> {
+export async function getUsers() {
   try {
-    const rows = await db
-      .select()
-      .from(users)
-      .leftJoin(accounts, eq(users.id, accounts.userId));
+    const user = await db.select().from(users);
 
-    const usersMap = new Map<string, UserWithAccounts>();
+    if (!user) return [];
 
-    for (const row of rows) {
-      const user = row.users;
-      const account = row.accounts;
-
-      // 🛡️ Safety guard (important)
-      if (!user) continue;
-
-      if (!usersMap.has(user.id)) {
-        usersMap.set(user.id, {
-          ...user,
-          accounts: [],
-        });
-      }
-
-      if (account) {
-        usersMap.get(user.id)!.accounts.push(account);
-      }
-    }
-
-    return [...usersMap.values()];
-  } catch (error) {
-    console.log("Error in registerUser:", error);
-    throw error;
+    return user;
+  } catch (err) {
+    console.log("Error fetching users with accounts:", err);
   }
 }
 export async function updateUserRole(
@@ -143,21 +103,6 @@ export async function updateUserRole(
     return user;
   } catch (error) {
     console.log("Error at update user role:", error);
-    throw error;
-  }
-}
-
-export async function getUserWithAccount(userId: string) {
-  try {
-    const [user] = await db.select().from(users).where(eq(users.id, userId));
-    if (!user) return null;
-    const userAccounts = await db
-      .select()
-      .from(accounts)
-      .where(eq(accounts.userId, userId));
-    return { ...user, accounts: userAccounts };
-  } catch (error) {
-    console.log("Error at getting user with accounts", error);
     throw error;
   }
 }
